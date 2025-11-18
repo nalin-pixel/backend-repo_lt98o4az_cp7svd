@@ -11,8 +11,8 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional, Literal
 
 # Example schemas (replace with your own):
 
@@ -22,7 +22,7 @@ class User(BaseModel):
     Collection name: "user" (lowercase of class name)
     """
     name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
+    email: EmailStr = Field(..., description="Email address")
     address: str = Field(..., description="Address")
     age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
     is_active: bool = Field(True, description="Whether user is active")
@@ -38,11 +38,28 @@ class Product(BaseModel):
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
+# School website specific schemas
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class EventRegistration(BaseModel):
+    """Collection for visit registrations (Lesjesavond, Open Day, Tour)."""
+    name: str = Field(..., min_length=2, description="Full name")
+    email: EmailStr = Field(..., description="Contact email")
+    phone: Optional[str] = Field(None, description="Phone number")
+    event_type: Literal["lesjesavond", "open_dag", "rondleiding"] = Field(..., description="Type of event")
+    message: Optional[str] = Field(None, description="Optional message or notes")
+
+class ContactMessage(BaseModel):
+    """General contact messages."""
+    name: str = Field(..., min_length=2)
+    email: EmailStr
+    phone: Optional[str] = None
+    subject: str = Field(..., min_length=2)
+    message: str = Field(..., min_length=5)
+
+class EnrolmentRequest(BaseModel):
+    """Initial enrolment request with minimal fields."""
+    parent_name: str = Field(..., min_length=2)
+    parent_email: EmailStr
+    student_name: str = Field(..., min_length=2)
+    current_group: Optional[str] = Field(None, description="Current primary school group (e.g., groep 8)")
+    notes: Optional[str] = None
